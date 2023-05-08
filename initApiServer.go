@@ -21,4 +21,5 @@ func hello(c echo.Context) error {
 
 func mainRoutes(echoApp *echo.Echo) {
 	echoApp.GET("/", hello)
+	echoApp.Static("/admin", "admin/dist")
 }
