@@ -13,7 +13,22 @@ type Config struct {
 
 var Env Config
 
-func getEnv() {
-	godotenv.Load()
-	envconfig.Process("CS", &Env)
+type EnvLoader interface {
+	Load() error
+	Process(prefix string, spec interface{}) error
+}
+
+type EnvConfigLoader struct{}
+
+func (e *EnvConfigLoader) Load() error {
+	return godotenv.Load()
+}
+
+func (e *EnvConfigLoader) Process(prefix string, spec interface{}) error {
+	return envconfig.Process(prefix, spec)
+}
+
+func getEnv(loader EnvLoader) {
+	loader.Load()
+	loader.Process("CS", &Env)
 }

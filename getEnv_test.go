@@ -1,28 +1,28 @@
 package main
 
 import (
-	"os"
 	"testing"
-
-	"github.com/joho/godotenv"
 )
 
-func TestGetEnv(t *testing.T) {
-	os.Setenv("CS_AUTH", "http://localhost:8000")
-	defer os.Unsetenv("CS_AUTH")
-	getEnv()
-	if Env.Auth != "http://localhost:8000" {
-		t.Errorf("getEnv() failed, expected %s but got %s", "http://localhost:8000", Env.Auth)
-	}
+type MockEnvLoader struct{}
+
+func (m *MockEnvLoader) Load() error {
+	return nil
 }
 
-func TestGetEnvWithDotEnv(t *testing.T) {
-	err := godotenv.Load("example.env")
-	if err != nil {
-		t.Errorf("Error loading example.env file: %v", err)
-	}
-	getEnv()
-	if Env.Auth != "http://localhost:8000" {
-		t.Errorf("getEnv() failed, expected %s but got %s", "http://localhost:8000", Env.Auth)
+func (m *MockEnvLoader) Process(prefix string, spec interface{}) error {
+	config := spec.(*Config)
+	config.Auth = "http://test.auth:8000"
+	config.Back = "http://test.back:8001"
+	config.Lobby = "http://test.lobby:8002"
+	return nil
+}
+
+func Test_getEnv(t *testing.T) {
+	mockLoader := &MockEnvLoader{}
+	getEnv(mockLoader)
+
+	if Env.Auth != "http://test.auth:8000" || Env.Back != "http://test.back:8001" || Env.Lobby != "http://test.lobby:8002" {
+		t.Errorf("getEnv() error, expected environment variables to be set from mock")
 	}
 }
